@@ -38,31 +38,32 @@ USER_HOME="/home/$USER_NAME"
 ################################################
 
 #Desktop apps part 1 (traditional analytic GIS)
-DESKTOP_APPS="grass76 qgis gvsig* openjump uDig ossimplanet
-              saga"
-#disabled: atlasstyler geopublisher spatialite-gis
+DESKTOP_APPS="grass78 qgis gvsig* openjump uDig saga"
+#disabled: atlasstyler geopublisher spatialite-gis ossimplanet 
 
 #Desktop apps part 2 (geodata viewers and editors)
-NAV_APPS="marble opencpn josm merkaartor osm_online
-          zygrib gpsprune"
+NAV_APPS="marble opencpn josm osm_online xygrib gpsprune"
+#disabled: merkaartor
 
 #Server apps part 1 (web-enabled GIS; interactive/WPS)
-WEB_SERVICES="deegree-* geoserver-* *geonetwork* mapserver mapproxy-*
-              qgis-mapserver zoo-project 52n* eoxserver* ncWMS-* pycsw istsos pywps t-rex"
+WEB_SERVICES="deegree-* geoserver-* *geonetwork* mapserver mapcache mapproxy-*
+              qgis-mapserver zoo-project 52n* eoxserver* ncWMS-* pycsw istsos
+              pywps t-rex actinia* pygeoapi-*"
 #disabled: mapguide*
 
 #Server apps part 2 (web based viewers; data only flows down to user)
-BROWSER_CLIENTS="openlayers cesium leaflet geomajas-* mapbender3 GeoMoose3 geonode-*"
+BROWSER_CLIENTS="openlayers cesium leaflet geomajas-* mapbender3 GeoMoose3
+                 geonode-* geoext geostyler"
 #disabled: i3geo MapFish-* cartaro-*
 
 #Infrastructure and miscellanea
-SPATIAL_TOOLS="r jupyter-notebook* otb-*
-               mapslicer mapnik-* monteverdi* ossim-geocell"
-#disabled: imagelinker
+SPATIAL_TOOLS="r jupyter-notebook* otb-* mapslicer mapnik-* monteverdi*"
+#disabled: imagelinker ossim-geocell
 
 #Future home of PostGIS and Spatialite; pgRouting???
 #  pgadmin, sqlitebrowser, etc  (parts of this one are automatic)
-DB_APPS="spatialite-gui *[Rr]asdaman* qbrowser shp2pgsql-gui"
+DB_APPS="spatialite-gui *[Rr]asdaman* shp2pgsql-gui"
+#disabled: qbrowser
 
 #Server apps part 3 (public good theme)
 # RELIEF_APPS="ushahidi"
@@ -92,31 +93,34 @@ cd "$USER_HOME/Desktop"
 ## OSGeo menu and CPU load for top taskbar:
 
 # tweak the lower taskbar
-LXPANEL="/usr/share/lxpanel/profile/Lubuntu/panels/panel"
+## Copy OSGeoLive emblem svg to lxqt graphics path
+cp "$BUILD_DIR"/../desktop-conf/osgeolive-emblem-plain.svg /usr/share/lxqt/graphics/osgeolive.svg
+
+LXPANEL="/usr/share/lxqt/panel.conf"
 cp "$LXPANEL" "$LXPANEL.bak"
-cp "$BUILD_DIR"/../desktop-conf/panel "$LXPANEL"
-mkdir -p /etc/skel/.config/lxpanel/Lubuntu/panels
-cp "$LXPANEL" /etc/skel/.config/lxpanel/Lubuntu/panels/
+cp "$BUILD_DIR"/../desktop-conf/panel.conf "$LXPANEL"
+mkdir -p /etc/skel/.config/lxqt
+cp "$LXPANEL" /etc/skel/.config/lxqt/
 
 
-# old:
-if [ 1 -eq 0 ] && [ `grep -c 'value="Geospatial"' /etc/xdg/xdg-xubuntu/xfce4/panel/default.xml` -eq 0 ] ; then
-  #present full applications menu name
-    sed -i -e 's+\(name="show-button-title" type="bool"\) value="false"/>+\1 value="true"/>\n      <property name="button-title" type="string" value="Applications"/>+' \
-      /etc/xdg/xdg-xubuntu/xfce4/panel/default.xml
+# xubuntu old:
+# if [ 1 -eq 0 ] && [ `grep -c 'value="Geospatial"' /etc/xdg/xdg-xubuntu/xfce4/panel/default.xml` -eq 0 ] ; then
+#   #present full applications menu name
+#     sed -i -e 's+\(name="show-button-title" type="bool"\) value="false"/>+\1 value="true"/>\n      <property name="button-title" type="string" value="Applications"/>+' \
+#       /etc/xdg/xdg-xubuntu/xfce4/panel/default.xml
 
-  #add new things to the top menubar
-  sed -i -e 's+\(<value type="int" value="1"/>\)+\1\n\t<value type="int" value="360"/>\n\t<value type="int" value="365"/>+' \
-         -e 's+<value type="int" value="6"/>+<value type="int" value="362"/>+' \
-	 -e 's+\(<value type="int" value=\)"26"/>+\1"363"/>\n        \1"26"/>+' \
-	 -e 's+^\(  </property>\)+    <property name="plugin-365" type="string" value="separator">\n      <property name="style" type="uint" value="3"/>\n    </property>\n    <property name="plugin-360" type="string" value="applicationsmenu">\n      <property name="custom-menu" type="bool" value="true"/>\n      <property name="custom-menu-file" type="string" value="/usr/local/share/xfce/osgeo-main.menu"/>\n      <property name="button-icon" type="string" value="gnome-globe"/>\n      <property name="button-title" type="string" value="Geospatial"/>\n    </property>\n    <property name="plugin-362" type="string" value="cpugraph"/>\n    <property name="plugin-363" type="string" value="xkb-plugin"/>\n\1+' \
-	    /etc/xdg/xdg-xubuntu/xfce4/panel/default.xml
-fi
+#   #add new things to the top menubar
+#   sed -i -e 's+\(<value type="int" value="1"/>\)+\1\n\t<value type="int" value="360"/>\n\t<value type="int" value="365"/>+' \
+#          -e 's+<value type="int" value="6"/>+<value type="int" value="362"/>+' \
+# 	 -e 's+\(<value type="int" value=\)"26"/>+\1"363"/>\n        \1"26"/>+' \
+# 	 -e 's+^\(  </property>\)+    <property name="plugin-365" type="string" value="separator">\n      <property name="style" type="uint" value="3"/>\n    </property>\n    <property name="plugin-360" type="string" value="applicationsmenu">\n      <property name="custom-menu" type="bool" value="true"/>\n      <property name="custom-menu-file" type="string" value="/usr/local/share/xfce/osgeo-main.menu"/>\n      <property name="button-icon" type="string" value="gnome-globe"/>\n      <property name="button-title" type="string" value="Geospatial"/>\n    </property>\n    <property name="plugin-362" type="string" value="cpugraph"/>\n    <property name="plugin-363" type="string" value="xkb-plugin"/>\n\1+' \
+# 	    /etc/xdg/xdg-xubuntu/xfce4/panel/default.xml
+# fi
 
-if [ -e "$USER_HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml" ] ; then
-  cp -f /etc/xdg/xdg-xubuntu/xfce4/panel/default.xml \
-     "$USER_HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
-fi
+# if [ -e "$USER_HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml" ] ; then
+#   cp -f /etc/xdg/xdg-xubuntu/xfce4/panel/default.xml \
+#      "$USER_HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
+# fi
 
 #cp "$BUILD_DIR"/../desktop-conf/menus/xkb-plugin-363.rc /etc/xdg/xdg-xubuntu/xfce4/panel/
 
@@ -181,6 +185,7 @@ for APP in $WEB_SERVICES ; do
 	geoserver-*) GROUP=GeoServer;;
 	*geonetwork*) GROUP=GeoNetwork;;
 	mapproxy-*) GROUP=MapProxy;;
+	pygeoapi-*) GROUP=pygeoapi;;
 	ncWMS-*) GROUP=ncWMS;;
 	*) unset GROUP;;
       esac
@@ -248,7 +253,10 @@ done
 #    fi
 # done
 
-
+#### Set all desktop files as trusted for LXQt
+for file in *.desktop ; do
+    gio set $file "metadata::trusted" yes
+done
 
 #### move desktop icons to subfolders
 mkdir "Desktop GIS"
@@ -301,6 +309,7 @@ deegree
 GeoNetwork
 GeoServer
 MapProxy
+pygeoapi
 ncWMS
 "
 
@@ -334,6 +343,7 @@ EOF
      GeoServer) APP_ICON=/usr/share/icons/geoserver_48x48.logo.png;;
      Geomajas) APP_ICON=/usr/share/icons/geomajas_icon_48x48.png;;
      MapProxy) APP_ICON=/usr/local/share/icons/mapproxy.png;;
+     pygeoapi) APP_ICON=/usr/local/share/icons/pygeoapi.png;;
      ncWMS) APP_ICON=/usr/local/share/icons/ncWMS_icon.png;;
      *) unset APP_ICON;;
    esac
@@ -504,7 +514,7 @@ cp "$BUILD_DIR"/../desktop-conf/icons/inspire.png /usr/local/share/icons/
 #  `grep -l 'Geography;' /usr/share/applications/*.desktop` \
 #  /usr/local/share/applications/*.desktop
 #if all are dupes, just nuke it:
-sed -i '63,78d' /etc/xdg/lubuntu/menus/lxde-applications.menu
+sed -i '57,67d' /etc/xdg/menus/lxqt-applications.menu
 
 
 ####

@@ -4,7 +4,7 @@
 # Purpose: This script will install marble
 #
 #############################################################################
-# Copyright (c) 2009-2019 The Open Source Geospatial Foundation and others.
+# Copyright (c) 2009-2020 The Open Source Geospatial Foundation and others.
 # Licensed under the GNU LGPL.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -34,29 +34,22 @@ USER_HOME="/home/$USER_NAME"
 
 apt-get install --yes marble-qt marble-data marble-plugins
 
-# install icon
-mkdir -p /usr/local/share/icons/
-cp -f "$USER_HOME/gisvm/app-conf/marble/marble_logo.png" \
-       /usr/local/share/icons/
-
-# create .desktop file
-mkdir -p /usr/local/share/applications
-if [ ! -e /usr/local/share/applications/marble.desktop ] ; then
-   cat << EOF > /usr/local/share/applications/marble.desktop
+cat << EOF > "/usr/share/applications/marble.desktop"
 [Desktop Entry]
 Type=Application
 Encoding=UTF-8
 Name=Marble
-Comment=Marble-Qt
-Categories=Education;Science;Geoscience;
-Exec=marble-qt
-Icon=/usr/local/share/icons/marble_logo.png
+Comment=Marble
+Categories=Application;Education;Geography;
+Exec=marble-qt %F
+Icon=marble
 Terminal=false
+StartupNotify=false
+Categories=Education;Geography;
 EOF
-fi
 
-cp -v /usr/local/share/applications/marble.desktop "$USER_HOME/Desktop/"
-chown -v $USER_NAME:$USER_NAME "$USER_HOME/Desktop/marble.desktop"
+cp /usr/share/applications/marble.desktop "$USER_HOME/Desktop/"
+chown "$USER_NAME.$USER_NAME" "$USER_HOME/Desktop/marble.desktop"
 
 ##-- save 5.5M by removing the unbuilt docbook docs; could change
 rm -rf /usr/share/doc/kde/HTML/en/marble

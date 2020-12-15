@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2009-2019 The Open Source Geospatial Foundation and others.
+# Copyright (c) 2009-2020 The Open Source Geospatial Foundation and others.
 # Licensed under the GNU LGPL version >= 2.1.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -61,7 +61,7 @@ Encoding=UTF-8
 Name=Start MapProxy
 Comment=MapProxy for LiveDVD WMS services
 Categories=Application;Geography;Geoscience;Education;
-Exec=lxterminal -e mapproxy_start.sh
+Exec=qterminal -e mapproxy_start.sh
 Icon=mapproxy
 Terminal=false
 StartupNotify=false
@@ -172,7 +172,7 @@ sources:
     req:
       url: http://localhost/cgi-bin/mapserv?
       layers: airports,cities,lakespy2,dlgstln2,roads,twprgpy3
-      map: /usr/local/www/docs_maps/mapserver_demos/workshop/itasca.map
+      map: /usr/local/www/docs_maps/mapserver_demos/itasca/itasca.map
     coverage:
       bbox: 363016.590190,5148502.940313,588593.999470,5374080.349593
       bbox_srs: 'epsg:26915'

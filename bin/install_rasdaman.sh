@@ -33,6 +33,9 @@ USER_HOME="/home/$USER_NAME"
 
 RMANHOME=/opt/rasdaman
 
+TOMCAT_WEBAPPS=/var/lib/tomcat/webapps
+TOMCAT_SVC=tomcat9
+
 setup_rasdaman_repo()
 {
   echo "Setup rasdaman package repository..."
@@ -46,6 +49,34 @@ setup_rasdaman_repo()
   echo "deb [arch=amd64] $rasdaman_pkgs_url/deb $codename $release" > /etc/apt/sources.list.d/rasdaman.list
 }
 
+unpack_war_file()
+{
+  # unpacks $1.war into a directory $1, and removes $1.war
+  local war_name="$1"
+  local war_file="$war_name.war"
+  pushd "$TOMCAT_WEBAPPS"
+  if [ -f "$war_file" ]; then
+    mkdir -p "$war_name"
+    mv "$war_file" "$war_name"
+    pushd "$war_name"
+    unzip "$war_file" && rm -f "$war_file" # extract
+    popd
+  fi
+  popd
+}
+
+delete_not_needed_files()
+{
+  # remove development stuff
+  for f in lib include share/rasdaman/war share/rasdaman/raswct; do
+    rm -rf $RMANHOME/$f
+  done
+  # remove development docs
+  rm -rf $RMANHOME/share/rasdaman/doc/doc-*
+  # strip executables
+  strip $RMANHOME/bin/ras* > /dev/null 2>&1 || true
+}
+
 install_rasdaman_pkg()
 {
   echo "Install rasdaman package..."
@@ -57,7 +88,15 @@ install_rasdaman_pkg()
   # make sure the rasdaman package is not removed by apt-get autoremove
   echo "rasdaman hold" | dpkg --set-selections
   # apt-mark manual rasdaman
-  apt-get -q install python-glob2
+  delete_not_needed_files
+
+  # --------
+  # need to unpack the war files (tomcat doesn't do it which causes issues)
+  unpack_war_file rasdaman
+  unpack_war_file def
+  service $TOMCAT_SVC restart
+  # --------
+
   echo
   echo "Rasdaman package installed successfully."
   echo
@@ -86,8 +125,8 @@ replace_rasdaman_user_with_system_user()
   chown -R $rasdaman_user:$rasdaman_group /opt/rasdaman
   # this directory is owned by an invalid uid after the user change, it can be just deleted
   rm -rf /tmp/rasdaman_*
-  # add rasdaman user to tomcat8 group
-  adduser $rasdaman_user tomcat8
+  # add rasdaman user to tomcat group
+  adduser $rasdaman_user tomcat
   # and user to rasdaman group
   adduser $USER_NAME $rasdaman_group
 
@@ -99,13 +138,13 @@ create_bin_starters()
   echo "Creating starting scripts..."
   cat > $RMANHOME/bin/rasdaman-start.sh <<EOF
 #!/bin/bash
-sudo service tomcat8 start
+sudo service $TOMCAT_SVC start
 sudo service rasdaman start
 echo "Rasdaman was started correctly."
 EOF
   cat > $RMANHOME/bin/rasdaman-stop.sh <<EOF
 #!/bin/bash
-sudo service tomcat8 stop
+sudo service $TOMCAT_SVC stop
 sudo service rasdaman stop
 echo -e "Rasdaman stopped."
 EOF
@@ -162,18 +201,6 @@ EOF
   chown $USER_NAME: $USER_HOME/Desktop/
 }
 
-delete_not_needed_files()
-{
-  # remove development stuff
-  for f in lib include share/rasdaman/war; do
-    rm -rf $RMANHOME/$f
-  done
-  # strip executables
-  for f in $RMANHOME/bin/*; do
-    strip $f > /dev/null 2>&1 || true
-  done
-}
-
 deploy_local_earthlook()
 {
   echo "Deploying local earthlook..."
@@ -198,8 +225,8 @@ deploy_local_earthlook()
   popd > /dev/null
 
   # start tomcat and rasdaman
-  service tomcat8 start
-  sleep 60
+  service $TOMCAT_SVC start
+  sleep 10
 
   # Then import the selected coverages from Earthlook demo-data to local petascope
   # to be used for some demos which use queries on these small coverages.
@@ -219,24 +246,20 @@ add_rasdaman_path_to_bashrc()
 # Install and setup demos
 #
 
-setup_rasdaman_repo "bionic" "stable"
+setup_rasdaman_repo "focal" "nightly"
 install_rasdaman_pkg
 
 replace_rasdaman_user_with_system_user
 create_bin_starters
 create_desktop_applications
-delete_not_needed_files
 add_rasdaman_path_to_bashrc
 deploy_local_earthlook
 
 rasdaman_service stop
-service tomcat8 stop
+service $TOMCAT_SVC stop
 
 
-##---- disk space v12
-rm -rf /opt/rasdaman/share/rasdaman/doc/doc-guides  ## 3.3MB
-
-rm -rf /etc/apt/sources.list.d/rasdaman.list
+mv /etc/apt/sources.list.d/rasdaman.list /etc/apt/sources.list.d/rasdaman.list.disabled
 apt-get -qq update -y
 
 # echo "Rasdaman command log:"

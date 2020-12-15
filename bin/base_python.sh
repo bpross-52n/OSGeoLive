@@ -5,7 +5,7 @@
 # OSGeoLive.
 #
 #############################################################################
-# Copyright (c) 2016-2019 Open Source Geospatial Foundation (OSGeo) and others.
+# Copyright (c) 2016-2020 Open Source Geospatial Foundation (OSGeo) and others.
 #
 # Licensed under the GNU LGPL.
 #
@@ -26,37 +26,35 @@ BUILD_DIR=`pwd`
 apt-get -q update
 
 # install the python .deb maker
-apt-get install --yes python-all-dev
-# removed from list: python-stdeb
+# apt-get install --yes python3-all-dev
 
 # # Install Django
+apt-get install --yes python3-django
 # apt-get install --yes python-django=1.8.7-1ubuntu5.6~bionic3 \
 #     python-django-common=1.8.7-1ubuntu5.6~bionic3
 
 # # Hold Django version to avoid upgrades from upstream
-# apt-mark hold python-django
+# apt-mark hold python3-django
 
-# Install Geospatial Python2 libraries
-apt-get install --yes python-gdal python-shapely python-rasterio \
-	python-fiona python-matplotlib python-geopandas python-pysal \
-	python-netcdf4 python-geojson python-scipy python-pandas \
-	python-pyshp python-descartes python-geographiclib python-kml \
-	python-cartopy python-seaborn python-networkx python-mappyfile
+# Install Geospatial Python libraries
+apt-get install --yes python3-gdal python3-shapely python3-rasterio rasterio \
+    python3-fiona fiona python3-matplotlib python3-tk python3-geopandas \
+    python3-netcdf4 python3-geojson python3-scipy python3-pandas \
+    python3-pyshp python3-descartes python3-geographiclib \
+    python3-cartopy python3-seaborn python3-networkx python3-branca python3-pysal \
+    python3-mappyfile python3-rtree 
 
 ##======================================================
 # clean cartopy  12beta  rm 6MB, add 3MB
-rm -rf /usr/lib/python2.7/dist-packages/cartopy/tests/*
-cd /tmp; mkdir tmp_cartopy; cd tmp_cartopy
-wget -c http://download.osgeo.org/livedvd/12/cartopy/cartopy_0143_data.tgz
-tar xf cartopy_0143_data.tgz
-mkdir /usr/lib/python2.7/dist-packages/cartopy/data
-chmod 755 /usr/lib/python2.7/dist-packages/cartopy/data
-cp -R cartopy_0143_data/*  /usr/lib/python2.7/dist-packages/cartopy/data/
+# rm -rf /usr/lib/python2.7/dist-packages/cartopy/tests/*
+# cd /tmp; mkdir tmp_cartopy; cd tmp_cartopy
+# wget -c http://download.osgeo.org/livedvd/12/cartopy/cartopy_0143_data.tgz
+# tar xf cartopy_0143_data.tgz
+# mkdir -p /usr/lib/python2.7/dist-packages/cartopy/data
+# chmod 755 /usr/lib/python2.7/dist-packages/cartopy/data
+# cp -R cartopy_0143_data/*  /usr/lib/python2.7/dist-packages/cartopy/data/
 ## TODO link to ~/data
 ##=========================
-
-# Install Geospatial Python3 libraries
-apt-get install --yes python3-gdal fiona rasterio
 
 # Add a symlink for rio
 ln -s /usr/bin/rasterio /usr/local/bin/rio

@@ -7,7 +7,7 @@
 #          Angelos Tzotsos <tzotsos@gmail.com>
 #
 #############################################################################
-# Copyright (c) 2013-2019 Open Source Geospatial Foundation (OSGeo) and others.
+# Copyright (c) 2013-2020 Open Source Geospatial Foundation (OSGeo) and others.
 #
 # Licensed under the GNU LGPL.
 # 
@@ -81,6 +81,7 @@ echo "Git branch: $GIT_BRANCH"
 
 DIR="/usr/local/share/gisvm/bin"
 GIT_DIR="/usr/local/share/gisvm"
+BUILD_HOME="/home/user"
 VERSION=`cat "$DIR"/../VERSION.txt`
 PACKAGE_NAME="osgeolive"
 cd "$GIT_DIR"
@@ -110,8 +111,8 @@ echo "==============================================================="
 
 #Some initial cleaning
 #  when run as root, ~ is /root/.
-rm -rf ~/livecdtmp/edit
-rm -rf ~/livecdtmp/lzfiles
+rm -rf "$BUILD_HOME"/livecdtmp/edit
+rm -rf "$BUILD_HOME"/livecdtmp/lzfiles
 
 echo
 echo "Installing build tools"
@@ -127,12 +128,12 @@ echo "====================================="
 
 #Stuff to be done the 1st time, should already be in place for additional builds
 #Download into an empty directory 
-mkdir -p ~/livecdtmp
-cd ~/livecdtmp
+mkdir -p "$BUILD_HOME"/livecdtmp
+cd "$BUILD_HOME"/livecdtmp
 #mv ubuntu-9.04-desktop-i386.iso ~/livecdtmp
 UBU_MIRROR="http://cdimage.ubuntu.com"
-UBU_RELEASE="18.04"
-ISO_RELEASE="18.04.2"
+UBU_RELEASE="20.04"
+ISO_RELEASE="20.04.1"
 UBU_ISO="lubuntu-${ISO_RELEASE}-desktop-$ARCH.iso"
 wget -c --progress=dot:mega \
    "$UBU_MIRROR/lubuntu/releases/$UBU_RELEASE/release/$UBU_ISO"
@@ -175,10 +176,10 @@ echo "======================================"
 
 #NOW IN CHROOT
 #sudo chroot edit
-sudo cp "$DIR"/inchroot.sh ~/livecdtmp/edit/tmp/
-sudo cp "$DIR"/bootstrap.sh ~/livecdtmp/edit/tmp/
-sudo cp "$GIT_DIR"/VERSION.txt ~/livecdtmp/edit/tmp/
-sudo cp "$GIT_DIR"/CHANGES.txt ~/livecdtmp/edit/tmp/
+sudo cp "$DIR"/inchroot.sh "$BUILD_HOME"/livecdtmp/edit/tmp/
+sudo cp "$DIR"/bootstrap.sh "$BUILD_HOME"/livecdtmp/edit/tmp/
+sudo cp "$GIT_DIR"/VERSION.txt "$BUILD_HOME"/livecdtmp/edit/tmp/
+sudo cp "$GIT_DIR"/CHANGES.txt "$BUILD_HOME"/livecdtmp/edit/tmp/
 sudo chroot edit /bin/sh /tmp/inchroot.sh "$ARCH" "$BUILD_MODE" "$GIT_BRANCH" "$GIT_USER"
 
 #exit
@@ -186,7 +187,7 @@ sudo chroot edit /bin/sh /tmp/inchroot.sh "$ARCH" "$BUILD_MODE" "$GIT_BRANCH" "$
 echo
 echo "Finished chroot part"
 echo "======================================"
-cd ~/livecdtmp
+cd "$BUILD_HOME"/livecdtmp
 sudo umount edit/dev
 
 #Compress osgeolive build logs
@@ -205,40 +206,45 @@ echo "======================================"
 
 #Method 2 hardcode default kernel from Lubuntu
 #need to repack the initrd.lz to pick up the change to casper.conf and kernel update
-sudo chroot edit mkinitramfs -c lzma -o /initrd 4.18.0-15-generic
-offset=$(binwalk ./edit/initrd -y lzma | grep 'LZMA' | awk '{ print $1; }')
-dd if=./edit/initrd bs=$offset skip=1 > initrd.lz
-dd if=./edit/initrd bs=1 count=$offset > initrd.micro
-rm edit/initrd
+#Use mkinitramfs to extract the initrd from current chroot (with potential new kernel)
+# sudo chroot edit mkinitramfs -c lz4 -o /initrd 5.4.0-42-generic
+#or just copy the existing initrd if no change happened to the kernel version
+# cp extract-cd/casper/initrd edit/initrd
+#offset at second LZ4 tag because the new packaging of initrd has 3 parts now
+# offset=$(binwalk ./edit/initrd -y lz4 | grep 'LZ4' | awk 'NR==2{ print $1; }')
+# dd if=./edit/initrd bs=$offset skip=1 > initrd.lz4
+# dd if=./edit/initrd bs=1 count=$offset > initrd.micro
+# rm edit/initrd
 
-#continue
 mkdir lzfiles
 cd lzfiles
-lzma -dc -S .lz ../initrd.lz | cpio -imvd --no-absolute-filenames
+cp ../extract-cd/casper/initrd .
+unmkinitramfs initrd .
+# lz4 -dc ../initrd.lz4 | cpio -imvd --no-absolute-filenames
 
 #Perhaps not needed since this also happens in chroot part.
-cp ../../gisvm/desktop-conf/casper/casper.conf etc/casper.conf
+cp ../../gisvm/desktop-conf/casper/casper.conf main/etc/casper.conf
 #cp ../../gisvm/desktop-conf/casper/27osgeo_groups scripts/casper-bottom/27osgeo_groups
 #cat << EOF >> scripts/casper-bottom/ORDER
 #/scripts/casper-bottom/27osgeo_groups
 #[ -e /conf/param.conf ] && ./conf/param.conf
 #EOF
 
-mv scripts/casper-bottom/25adduser scripts/casper-bottom/25adduser.ORIG
-cat scripts/casper-bottom/25adduser.ORIG \
+mv main/scripts/casper-bottom/25adduser main/scripts/casper-bottom/25adduser.ORIG
+cat main/scripts/casper-bottom/25adduser.ORIG \
     ../../gisvm/desktop-conf/casper/27osgeo_groups \
-  > scripts/casper-bottom/25adduser
-rm scripts/casper-bottom/25adduser.ORIG
-chmod a+x scripts/casper-bottom/25adduser
+  > main/scripts/casper-bottom/25adduser
+rm main/scripts/casper-bottom/25adduser.ORIG
+chmod a+x main/scripts/casper-bottom/25adduser
 
 
 #Replace the user password
-sed -i -e 's/U6aMy0wojraho/eLyJdzDtonrIc/g' scripts/casper-bottom/25adduser
+sed -i -e 's/U6aMy0wojraho/eLyJdzDtonrIc/g' main/scripts/casper-bottom/25adduser
 
 #Change the graphics on the lubuntu-logo plymouth loader both on lzfiles
 # and on edit folders
 cp ../../gisvm/desktop-conf/plymouth/lubuntu-logo/* \
-    usr/share/plymouth/themes/lubuntu-logo/
+    main/usr/share/plymouth/themes/lubuntu-logo/
 
 cp ../../gisvm/desktop-conf/plymouth/lubuntu-logo/* \
     ../edit/usr/share/plymouth/themes/lubuntu-logo/
@@ -246,7 +252,7 @@ cp ../../gisvm/desktop-conf/plymouth/lubuntu-logo/* \
 #Change the text on the lubuntu-text plymouth loader both on lzfiles
 # and on edit folders
 sed -i -e "s/title=.ubuntu ${UBU_RELEASE}/title=OSGeoLive ${VERSION_MODE}/g" \
-    usr/share/plymouth/themes/lubuntu-text/lubuntu-text.plymouth
+    main/usr/share/plymouth/themes/lubuntu-text/lubuntu-text.plymouth
 
 sed -i -e "s/title=.ubuntu ${UBU_RELEASE}/title=OSGeoLive ${VERSION_MODE}/g" \
     ../edit/usr/share/plymouth/themes/lubuntu-text/lubuntu-text.plymouth
@@ -255,15 +261,27 @@ sed -i -e "s/title=.ubuntu ${UBU_RELEASE}/title=OSGeoLive ${VERSION_MODE}/g" \
 sed -i -e "s/.ubuntu ${ISO_RELEASE} LTS \"Bionic Beaver\"/OSGeoLive ${VERSION_MODE}/g" \
     ../extract-cd/.disk/info
 
-rm ../initrd.lz
-find . | cpio --quiet --dereference -o -H newc | \
-   lzma -7 > ../initrd.lz
+# rm ../initrd.lz4
+# find . | cpio --quiet --dereference -o -H newc | \
+#    lz4 -9 -l > ../initrd.lz4
+
+touch myinitrd
+cd early
+find . -print0 | cpio --null --create --format=newc > ../myinitrd
+# find . -print0 | cpio -R 0:0 -o -H newc > ../myinitrd
+cd ../early2
+find kernel -print0 | cpio --null --create --format=newc >> ../myinitrd
+# find kernel -print0 | cpio -R 0:0 -o -H newc >> ../myinitrd
+cd ../main
+find . | cpio --create --format=newc | lz4 -9 -l >> ../myinitrd
+# find . | cpio -R 0:0 -o -H newc | lz4 -9 -l >> ../myinitrd
 
 cd ..
-cat initrd.micro initrd.lz > initrd
-rm initrd.micro initrd.lz
-mv initrd extract-cd/casper/initrd
-
+# cat initrd.micro initrd.lz4 > initrd
+# rm initrd.micro initrd.lz4
+# mv initrd extract-cd/casper/initrd
+mv myinitrd ../extract-cd/casper/initrd
+cd ..
 
 echo
 echo "Regenerating manifest..."
@@ -287,6 +305,8 @@ echo "======================================"
 sudo rm extract-cd/casper/filesystem.squashfs
 sudo mksquashfs edit extract-cd/casper/filesystem.squashfs
 # sudo mksquashfs edit extract-cd/casper/filesystem.squashfs -no-progress
+echo "squashfs size:"
+ls -l extract-cd/casper/filesystem.squashfs
 
 echo
 echo "Calculating new filesystem size..."
@@ -299,7 +319,7 @@ printf $(sudo du -sx --block-size=1 edit | cut -f1) > \
 chmod -w extract-cd/casper/filesystem.size
 
 #this is now compressed in squashfs so we delete to save VM disk space
-cd ~/livecdtmp
+cd "$BUILD_HOME"/livecdtmp
 sudo rm -rf edit
 
 #Set an image name in extract-cd/README.diskdefines
@@ -337,7 +357,7 @@ echo
 echo "Cleaning up..."
 echo "======================================"
 #Clear things up and prepare for next build
-cd ~/livecdtmp
+cd "$BUILD_HOME"/livecdtmp
 sudo rm -rf extract-cd
 sudo umount mnt
 sudo rm -rf mnt

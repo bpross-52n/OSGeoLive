@@ -6,7 +6,7 @@
 # Version 2018-06-14
 #
 #############################################################################
-# Copyright (c) 2011-2019 The Open Source Geospatial Foundation and others.
+# Copyright (c) 2011-2020 The Open Source Geospatial Foundation and others.
 # Licensed under the GNU LGPL.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -37,8 +37,8 @@ if [ -z "$USER_NAME" ] ; then
    USER_NAME="user"
 fi
 USER_HOME="/home/$USER_NAME"
-TOMCAT_USER_NAME="tomcat8"
-TOMCAT_SCRIPT_NAME="$TOMCAT_USER_NAME"
+TOMCAT_USER_NAME="tomcat"
+TOMCAT_SCRIPT_NAME="tomcat9"
 SOS_WEB_APP_NAME="52nSOS"
 SOS_ICON_NAME="52nSOS.png"
 SOS_URL="http://localhost:8080/$SOS_WEB_APP_NAME"
@@ -188,7 +188,7 @@ if [ $SOS_DB_EXISTS -gt 0 ] ; then
 fi
 #
 echo "[$(date +%M:%S)]: Create SOS db"
-su $PG_USER -c "PGOPTIONS='$PG_OPTIONS' createdb --owner=$USER_NAME $PG_DB_NAME"
+su $PG_USER -c "PGOPTIONS='$PG_OPTIONS' createdb --owner=$PG_USER $PG_DB_NAME"
 su $PG_USER -c "PGOPTIONS='$PG_OPTIONS' psql $PG_DB_NAME -c 'create extension postgis;'"
 # su $PG_USER -c "PGOPTIONS='$PG_OPTIONS' psql $PG_DB_NAME -c 'create extension postgis_topology;'"
 echo "[$(date +%M:%S)]: DB $PG_DB_NAME created"

@@ -5,7 +5,7 @@
 # The script will also add an ALIAS for Mapbender and a Desktop icon.
 #
 #############################################################################
-# Copyright (c) 2009-2019 The Open Source Geospatial Foundation and others.
+# Copyright (c) 2009-2020 The Open Source Geospatial Foundation and others.
 # Licensed under the GNU LGPL version >= 2.1.
 # 
 # This library is free software; you can redistribute it and/or modify it
@@ -39,9 +39,9 @@ USER_HOME="/home/$USER_NAME"
 
 TMP_DIR="/tmp/build_mapbender"
 PARAMETERSINSTALLURL="https://www.mapbender.org/builds/osgeolive"
-INSTALLURL="http://www.mapbender.org/builds/3.0.8"
-INSTALLFILE="mapbender-starter-v3.0.8"
-PARAMETERSFILE="mapbender3-starter-3.0.6.2"
+INSTALLURL="http://www.mapbender.org/builds/3.2.2"
+INSTALLFILE="mapbender-starter-v3.2.2"
+PARAMETERSFILE="mapbender-starter-3.2.0"
 INSTALL_DIR="/var/www/html"
 
 mkdir -p "$TMP_DIR"
@@ -94,14 +94,14 @@ cd "$INSTALL_DIR/mapbender/"
 rm  "$INSTALL_DIR/mapbender/app/config/parameters.yml"
 cp "$TMP_DIR/${PARAMETERSFILE}_parameters.yml"    "$INSTALL_DIR/mapbender/app/config/parameters.yml"
 
-sed -i -e 's/3.0.6.2/3.0.8/g' "$INSTALL_DIR/mapbender/app/config/parameters.yml"
+sed -i -e 's/3.2.0/3.2.2/g' "$INSTALL_DIR/mapbender/app/config/parameters.yml"
 
 app/console doctrine:database:create
 app/console doctrine:schema:create
 app/console init:acl
-app/console assets:install web
+app/console assets:install web --symlink --relative
 app/console fom:user:resetroot --username="root" --password="root" --email="root@example.com" --silent
-app/console doctrine:fixtures:load --fixtures=./mapbender/src/Mapbender/CoreBundle/DataFixtures/ORM/Epsg/ --append
+app/console mapbender:database:init
 app/console doctrine:fixtures:load --fixtures=./mapbender/src/Mapbender/CoreBundle/DataFixtures/ORM/Application/ --append
 
 chown -R user:www-data "$INSTALL_DIR/mapbender"
@@ -112,6 +112,7 @@ app/console assets:install web --symlink --relative
 chown -R user:www-data "$INSTALL_DIR/mapbender"
 chmod -R ug+w "$INSTALL_DIR/mapbender/app/cache/"
 chmod -R ug+w "$INSTALL_DIR/mapbender/app/logs/"
+chmod -R ug+w "$INSTALL_DIR/mapbender/app/config/"
 chmod -R ug+w "$INSTALL_DIR/mapbender/web/"
 
 chmod -R ug+w "$INSTALL_DIR/mapbender/app/db/demo.sqlite"

@@ -8,7 +8,7 @@
 #	         Angelos Tzotsos <tzotsos@gmail.com>
 #
 #############################################################################
-# Copyright (c) 2010-2019 Open Source Geospatial Foundation (OSGeo) and others.
+# Copyright (c) 2010-2020 Open Source Geospatial Foundation (OSGeo) and others.
 # Copyright (c) 2009 LISAsoft
 #
 # Licensed under the GNU LGPL version >= 2.1.
@@ -141,11 +141,11 @@ export USER_NAME
 ./install_pgrouting.sh
 ./install_ossim.sh
 ./install_mapserver.sh
+./install_mapcache.sh
 ./install_tinyows.sh
 ./install_gmt.sh
-./install_mapnik.sh
+# ./install_mapnik.sh
 ./install_otb.sh
-./install_liblas.sh
 ./install_saga.sh
 ./install_grass.sh
 ./install_qgis.sh
@@ -153,17 +153,18 @@ export USER_NAME
 # ./install_zoo-project.sh "$ARCH"
 ./install_marble.sh
 ./install_opencpn.sh
-./install_zygrib.sh
+./install_xygrib.sh
 ./install_PDAL.sh
 
 ## Python stack
 ./install_mapproxy.sh
 ./install_pycsw.sh
 ./install_pywps.sh
-# ./install_eoxserver.sh
-./install_iris.sh
+./install_pygeoapi.sh
+./install_eoxserver.sh
+# ./install_iris.sh
 ./install_istsos.sh
-./install_mapslicer.sh
+# ./install_actinia.sh
 
 ## R stack
 ./install_R.sh
@@ -175,16 +176,15 @@ export USER_NAME
 ./install_geoserver.sh
 ./install_geonetwork.sh
 ./install_deegree.sh
-./install_geomajas.sh
 ./install_udig.sh "$ARCH"
 ./install_openjump.sh
-./install_gvsig.sh "$ARCH"
+# ./install_gvsig.sh "$ARCH"
 ./install_gpsprune.sh
 
 ## Java + default tomcat
 ./install_52nWPS.sh
 ./install_52nSOS.sh
-./install_ncWMS.sh
+# ./install_ncWMS.sh
 
 ## PHP stack
 ./install_mapbender.sh
@@ -200,7 +200,10 @@ export USER_NAME
 ./install_openlayers.sh
 ./install_leaflet.sh
 ./install_cesium.sh
-# ./install_rasdaman.sh
+./install_geoext.sh
+./install_rasdaman.sh
+./install_geostyler.sh
+# ./install_re3gistry.sh
 
 ## Docs, Data and extras
 ./load_gisdata.sh

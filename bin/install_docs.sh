@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2009-2019 The Open Source Geospatial Foundation and others.
+# Copyright (c) 2009-2020 The Open Source Geospatial Foundation and others.
 # Copyright (c) 2009 LISAsoft
 # Copyright (c) 2009 Cameron Shorter
 # Licensed under the GNU LGPL version >= 2.1.
@@ -44,7 +44,7 @@ if [ "$BUILD_MODE" = "nightly" ] ; then
    apt-get update
 fi
 
-apt-get install --assume-yes osgeolive-docs javascript-common
+apt-get install --assume-yes osgeolive-docs javascript-common fonts-noto-cjk
 
 ln -s /usr/share/doc/osgeolive-docs/html $DEST/osgeolive
 

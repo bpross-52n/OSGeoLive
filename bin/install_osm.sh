@@ -4,7 +4,7 @@
 # Purpose: This script will install some OpenStreetMap utilities
 #
 #############################################################################
-# Copyright (c) 2009-2019 The Open Source Geospatial Foundation and others.
+# Copyright (c) 2009-2020 The Open Source Geospatial Foundation and others.
 # Licensed under the GNU LGPL.
 #
 # This script is free software; you can redistribute it and/or modify it
@@ -42,7 +42,7 @@ cd "$TMP_DIR"
 mkdir /usr/local/share/osm
 
 apt-get install --assume-yes josm gpsd gpsd-clients \
-   xmlstarlet imposm osmosis python-osmapi \
+   xmlstarlet osmosis python3-osmapi \
    osmctools osmium-tool nik4
 
 
@@ -72,17 +72,14 @@ mv *jar "$USER_HOME"/.josm/plugins/
 chown $USER_NAME.$USER_NAME "$USER_HOME"/.josm -R
 
 #### desktop icons
-echo "MimeType=application/x-openstreetmap+xml;" \
-   >> /usr/share/applications/josm.desktop
-echo '#!/usr/bin/env xdg-open' > "$USER_HOME"/Desktop/josm.desktop
-cat /usr/share/applications/josm.desktop >> "$USER_HOME"/Desktop/josm.desktop
+cp /usr/share/applications/org.openstreetmap.josm.desktop "$USER_HOME"/Desktop/josm.desktop
 chmod a+x "$USER_HOME"/Desktop/josm.desktop
 
 # add an icon for viewing The Map online
 mkdir -p /usr/local/share/applications
 
-MAP_CENTER="lat=-6.80&lon=39.28"
-MARKER="mlat=-6.812&mlon=39.279"
+MAP_CENTER="lat=44.436&lon=26.103"
+MARKER="mlat=44.436&mlon=26.103"
 ZOOM="16"
 
 cat << EOF > /usr/local/share/applications/osm_online.desktop
@@ -102,11 +99,9 @@ cp /usr/local/share/applications/osm_online.desktop "$USER_HOME/Desktop/"
 
 #########################################################################
 #### install sample OSM data
-CITY="DS_TZ"
-BBOX="39.251,-6.8275,39.302,-6.792"
+CITY="Bucaresti_RO"
+BBOX="26.0535,44.4058,26.1468,44.4566"
 
-# visualize: (FIXME!)
-#http://www.openstreetmap.org/?box=yes&bbox=$BBOX
 
 # Perhaps it is too detailed a city for some of our examples, so we
 #  provide a smaller version too:

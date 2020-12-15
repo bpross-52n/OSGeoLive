@@ -5,7 +5,7 @@
 # OSGeoLive install scripts.
 #
 #############################################################################
-# Copyright (c) 2009-2019 Open Source Geospatial Foundation (OSGeo) and others.
+# Copyright (c) 2009-2020 Open Source Geospatial Foundation (OSGeo) and others.
 #
 # Licensed under the GNU LGPL.
 #
@@ -54,6 +54,7 @@ sed -i -e 's|\(APT::Periodic::Update-Package-Lists\) "1";|\1 "7";|' \
 
 # Pin down kernel version
 echo "linux-image-generic hold" | dpkg --set-selections
+# echo "linux-signed-generic-hwe-18.04 hold" | dpkg --set-selections
 
 # Install latest greatest security packages etc.
 apt-get -q update
@@ -68,7 +69,7 @@ else
 fi
 
 #Add keys for repositories
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FADA29F7
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys FADA29F7
 # Staging repo
 #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6EB3B214
 # UbuntuGIS
@@ -79,9 +80,9 @@ apt-get -q update
 
 # Install some useful stuff
 apt-get install --yes wget less zip unzip bzip2 p7zip \
-  git openssh-client lftp sl usbutils wireless-tools \
+  git openssh-client lftp usbutils wireless-tools \
   locate patch menu vim nano screen iotop xfonts-jmk \
-  ghostscript htop units gdebi fslint xkb-data \
+  ghostscript htop units gdebi xkb-data \
   xfonts-100dpi xfonts-75dpi zenity curl
 
 # removed from list:
@@ -92,8 +93,8 @@ apt-get install --yes wget less zip unzip bzip2 p7zip \
 # Install virtualbox guest additions
 # If running on virtualbox this will allow us to use full-screen/usb2/...
 # If running outside virtualbox the drivers will not be loaded
-# apt-get install --yes virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
-apt-get install --yes virtualbox-guest-dkms-hwe virtualbox-guest-utils-hwe virtualbox-guest-x11-hwe
+apt-get install --yes virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
+# apt-get install --yes virtualbox-guest-dkms-hwe virtualbox-guest-utils-hwe virtualbox-guest-x11-hwe
 
 ##-------
 # add /usr/local/lib to /etc/ld.so.conf if needed, then run ldconfig
@@ -135,7 +136,7 @@ rm -fr "$USER_HOME"/Public
 rm -fr "$USER_HOME"/Templates
 rm -fr "$USER_HOME"/Videos
 # and don't come back now
-apt-get --assume-yes remove xdg-user-dirs
+# apt-get --assume-yes remove xdg-user-dirs
 
 # .. and remove any left-over package cruft
 apt-get --assume-yes autoremove

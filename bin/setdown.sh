@@ -5,7 +5,7 @@
 # install scripts.
 #
 #############################################################################
-# Copyright (c) 2009-2019 Open Source Geospatial Foundation (OSGeo) and others.
+# Copyright (c) 2009-2020 Open Source Geospatial Foundation (OSGeo) and others.
 #
 # Licensed under the GNU LGPL.
 #
@@ -38,7 +38,7 @@ VM="${PACKAGE_NAME}-$VERSION"
 # Add 'user' to needed groups
 #   GRPS="audio dialout fuse plugdev pulse staff tomcat7 users www-data vboxsf"
 #bad smelling hack to mitigate the effects of #1104's race condition
-GRPS="users tomcat8 www-data staff plugdev audio dialout pulse vboxsf"
+GRPS="users tomcat www-data staff plugdev audio dialout pulse vboxsf"
 
 ## Create systemd service for manage_user_groups.sh
 ## source: https://askubuntu.com/questions/814/how-to-run-scripts-on-start-up/719157#719157
@@ -76,27 +76,31 @@ systemctl enable manage_user_groups.service
 #   /usr/share/initramfs-tools/scripts/casper-bottom/
 
 # remove build stuff no longer of use
-apt-get --yes remove python-all-dev libpython2.7-dev
+apt-get --yes remove libboost1.71-dev
+
+# remove stuff to save disk space (#467)
+apt-get --yes remove libreoffice-common libreoffice-core 2048-qt noblenote trojita \
+  transmission-common k3b vlc snapd libllvm9
 
 # remove any leftover orphans
 apt-get --yes autoremove
 
 # Python packages disk space cleanup
-rm -rf /usr/lib/python2.7/dist-packages/pandas/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/simplejson/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/seaborn/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/scipy/special/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/scipy/optimize/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/scipy/io/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/scipy/io/matlab/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/matplotlib/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/numpy/core/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/numpy/lib/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/numpy/ma/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/numpy/polynomial/tests/*
-rm -rf /usr/lib/python2.7/dist-packages/numpy/tests/*
+rm -rf /usr/lib/python3/dist-packages/pandas/tests/*
+rm -rf /usr/lib/python3/dist-packages/simplejson/tests/*
+rm -rf /usr/lib/python3/dist-packages/seaborn/tests/*
+rm -rf /usr/lib/python3/dist-packages/scipy/special/tests/*
+rm -rf /usr/lib/python3/dist-packages/scipy/optimize/tests/*
+rm -rf /usr/lib/python3/dist-packages/scipy/io/tests/*
+rm -rf /usr/lib/python3/dist-packages/scipy/io/matlab/tests/*
+rm -rf /usr/lib/python3/dist-packages/matplotlib/tests/*
+rm -rf /usr/lib/python3/dist-packages/numpy/core/tests/*
+rm -rf /usr/lib/python3/dist-packages/numpy/lib/tests/*
+rm -rf /usr/lib/python3/dist-packages/numpy/ma/tests/*
+rm -rf /usr/lib/python3/dist-packages/numpy/polynomial/tests/*
+rm -rf /usr/lib/python3/dist-packages/numpy/tests/*
 
-cd /usr/lib/python2.7/dist-packages;
+cd /usr/lib/python3/dist-packages;
 ## ----------------------------------------
 ## clear out more test dirs manually..
 rm -rf cartopy/tests/*
@@ -230,31 +234,35 @@ if [ -e /etc/ssh/sshd_config ] ; then
 fi
 
 # Start tomcat to ensure all applications are deployed
-service tomcat8 start
+# FIXME: systemctl and service are not available in chroot.
+service tomcat9 start
 sleep 120
-service tomcat8 stop
+service tomcat9 stop
 
 # Disable auto-deploy to prevent applications to get removed after removing war files
 # TODO: Add some note to wiki for users that want to deploy their own tomcat applications
 sed -i -e 's/unpackWARs="true"/unpackWARs="false"/' -e 's/autoDeploy="true"/autoDeploy="false"/' \
-    /etc/tomcat8/server.xml
+    /etc/tomcat9/server.xml
 
 # Cleaning up war files to save disk space
-rm -f /var/lib/tomcat8/webapps/*.war
+rm -f /var/lib/tomcat9/webapps/*.war
 
 # Disabling default tomcat startup
 #update-rc.d -f tomcat7 remove
-systemctl disable tomcat8.service
+systemctl disable tomcat9.service
 
 if [ ! -e /etc/sudoers.d/tomcat ] ; then
    cat << EOF > /etc/sudoers.d/tomcat
-%users ALL=(root) NOPASSWD: /usr/sbin/service tomcat8 start,/usr/sbin/service tomcat8 stop,/usr/sbin/service tomcat8 status
+%users ALL=(root) NOPASSWD: /usr/sbin/service tomcat9 start,/usr/sbin/service tomcat9 stop,/usr/sbin/service tomcat9 status
 EOF
 fi
 chmod 440 /etc/sudoers.d/tomcat
 
 # #2084: Fix home path for exracted ncWMS
-sed -i -e 's|\$HOME/.ncWMS2|/usr/share/tomcat8/.ncWMS2|' /var/lib/tomcat8/webapps/ncWMS2/WEB-INF/web.xml
+sed -i -e 's|\$HOME/.ncWMS2|/usr/share/tomcat9/.ncWMS2|' /var/lib/tomcat9/webapps/ncWMS2/WEB-INF/web.xml
+
+# #2263: Fix installation of live system
+sed -i -e 's|/home/lubuntu|/home/user|' /bin/calamares-logs-helper
 
 # Switching to default IPv6
 rm /etc/gai.conf
@@ -270,6 +278,10 @@ service apache2 stop
 #echo " Compress image by wiping the virtual disk, filling empty space with zero."
 #cat /dev/zero > zero.fill ; sync ; sleep 1 ; sync ; rm -f zero.fill
 
+# Deleting users created by tomcat installer in chroot.
+# Hopefully they will be created on boot time by /usr/lib/sysusers.d/tomcat9.conf
+deluser tomcat
+deluser systemd-coredump
 
 ####
 "$BUILD_DIR"/diskspace_probe.sh "`basename $0`" end
